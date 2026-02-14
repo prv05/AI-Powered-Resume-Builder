@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Saved Resume Templates - AI Resume Builder</title>
+  <style>
+    :root {
+      --primary-color: #4a90e2;
+      --gradient: linear-gradient(135deg, #141e30, #243b55);
+      --bg-light: #f5f7fa;
+      --bg-dark: #121212;
+      --text-light: #ffffff;
+      --text-dark: #1a1a1a;
+      --card-light: #ffffff;
+      --card-dark: #1f1f1f;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+    }
+
+    header {
+      background: var(--gradient);
+      color: white;
+      padding: 1.2rem 2rem;
+      font-size: 1.8rem;
+      font-weight: bold;
+      text-align: center;
+      position: relative;
+    }
+
+    .go-back {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: white;
+      color: var(--primary-color);
+      border: none;
+      padding: 0.4rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    body.dark .go-back {
+      background-color: #333;
+      color: #fff;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      background: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    body.dark .theme-toggle {
+      background: #333;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    #savedTemplatesContainer {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .template-card {
+      background-color: var(--card-light);
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      overflow: hidden;
+      position: relative;
+      height: 500px;
+    }
+
+    body.dark .template-card {
+      
+      box-shadow: 0 3px 10px rgba(255, 255, 255, 0.05);
+    }
+
+    .template-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .template-date {
+      font-size: 0.85rem;
+      color: gray;
+      margin-bottom: 0.6rem;
+      text-align: center;
+    }
+
+    .template-frame {
+      width: 100%;
+      height: 400px;
+      border: none;
+      border-radius: 8px;
+      transform: scale(0.75);
+      transform-origin: top left;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .btn-group {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 0.5rem;
+    }
+
+    .btn {
+      padding: 0.4rem 0.7rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: bold;
+      transition: 0.3s ease;
+    }
+
+    .btn-download { background-color: #4caf50; color: white; }
+    .btn-delete { background-color: #f44336; color: white; }
+    .btn-view { background-color: #2196f3; color: white; }
+
+    .btn:hover { opacity: 0.9; }
+
+    .no-data {
+      text-align: center;
+      font-size: 1.2rem;
+      color: gray;
+      margin-top: 3rem;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+
+    .modal iframe {
+      width: 90vw;
+      height: 90vh;
+      border: none;
+      border-radius: 10px;
+      background: white;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 2rem;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      header { font-size: 1.4rem; padding: 1rem; }
+      .template-frame { transform: scale(0.5); width: 200%; height: 300px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    📄 Saved Resume Templates
+    <button class="go-back" onclick="window.location.href='./index'">← Go Back</button>
+  </header>
+
+  <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+
+  <div class="container">
+    <div class="no-data" id="noDataMsg">Loading saved templates...</div>
+    <div id="savedTemplatesContainer"></div>
+  </div>
+
+  <!-- Fullscreen Modal -->
+  <div id="previewModal" class="modal">
+    <span class="modal-close" onclick="closeModal()">×</span>
+    <iframe id="modalFrame" srcdoc=""></iframe>
+  </div>
+
+  <script>
+    // Theme
+    const toggleTheme = () => {
+      document.body.classList.toggle("dark");
+      localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+    };
+
+    window.onload = () => {
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "dark") {
+        document.body.classList.add("dark");
+      }
+    };
+
+    // Load templates
+    window.addEventListener("DOMContentLoaded", () => {
+      const currentUser = "NoothanKT"; // Replace dynamically
+
+      fetch(`/get-templates?username=${encodeURIComponent(currentUser)}`)
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById("savedTemplatesContainer");
+          const noDataMsg = document.getElementById("noDataMsg");
+
+          if (!data.templates || data.templates.length === 0) {
+            noDataMsg.textContent = "No saved templates found.";
+            return;
+          }
+
+          noDataMsg.style.display = "none";
+
+          data.templates.forEach(template => {
+            const card = document.createElement("div");
+            card.className = "template-card";
+            const date = new Date(template.createdAt).toLocaleString();
+            const safeHTML = (template.templateCode || template.content || "").replace(/"/g, '&quot;');
+
+            card.innerHTML = `
+              <div class="template-date">Saved on: ${date}</div>
+              <iframe class="template-frame" srcdoc="${safeHTML}" sandbox="allow-same-origin"></iframe>
+              <div class="btn-group">
+                <button class="btn btn-download" onclick="downloadTemplate(\`${safeHTML}\`)">Download</button>
+                <button class="btn btn-delete" onclick="deleteTemplate('${template._id}', this)">Delete</button>
+                <button class="btn btn-view" onclick="openModal(\`${safeHTML}\`)">View</button>
+              </div>
+            `;
+            container.appendChild(card);
+          });
+        })
+        .catch(err => {
+          console.error("Error loading templates:", err);
+          document.getElementById("noDataMsg").textContent = "Failed to load templates.";
+        });
+    });
+
+    // Download
+    function downloadTemplate(html) {
+      const blob = new Blob([html], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "resume.html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Delete
+    function deleteTemplate(templateId, btn) {
+      if (!confirm("Are you sure you want to delete this resume?")) return;
+
+      fetch(`/delete-template/${templateId}`, { method: "DELETE" })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            btn.closest(".template-card").remove();
+          } else {
+            alert("Failed to delete template.");
+          }
+        })
+        .catch(err => {
+          console.error("Delete error:", err);
+          alert("An error occurred while deleting.");
+        });
+    }
+
+    // Modal View
+    function openModal(html) {
+      const modal = document.getElementById("previewModal");
+      const frame = document.getElementById("modalFrame");
+      frame.srcdoc = html;
+      modal.style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("previewModal").style.display = "none";
+    }
+  </script>
+</body>
+</html>

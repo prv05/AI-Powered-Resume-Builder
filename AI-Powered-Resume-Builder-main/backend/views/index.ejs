@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Resume Builder</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --text: #e0e0e0;
+      --box: #1a1a1a;
+      --input: #2a2a2a;
+      --button: #4fc3f7;
+      --button-hover: #29b6f6;
+    }
+    body.light {
+      --bg: #ffffff;
+      --text: #1a1a1a;
+      --box: #f0f0f0;
+      --input: #e0e0e0;
+      --button: #1976d2;
+      --button-hover: #1565c0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+    }
+    .container { display: flex; flex-direction: column; height: 100vh; }
+    .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background: linear-gradient(to right, #141e30, #243b55);
+      color: #ffffff;
+      position: relative;
+    }
+    .header h2 { font-size: 26px; }
+    .profile-container {
+      position: absolute; right: 60px; top: 20px;
+    }
+    .profile {
+      width: 35px; height: 35px;
+      background: #ffffff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #000; font-weight: bold; cursor: pointer;
+    }
+    .profile-container:hover .dropdown {
+      display: flex;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      padding: 15px;
+      flex-direction: column;
+      z-index: 1;
+    }
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: 45px;
+      right: 0;
+      background-color: var(--box);
+      color: var(--text);
+      border-radius: 5px;
+      box-shadow: 0 2px 8px rgba(55, 48, 48, 0.5);
+      z-index: 10;
+    }
+    .dropdown a {
+      display: block;
+      padding: 10px 20px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .dropdown a:hover { background-color: #333; }
+    .theme-switch {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+    }
+    .content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      flex-direction: row;
+    }
+    .sidebar {
+      width: 250px;
+      background: var(--box);
+      padding: 20px;
+      overflow-y: auto;
+      transition: all 0.3s;
+    }
+    .sidebar.collapsed {
+      width: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    .template {
+      background: var(--input);
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .template:hover { background: #3a3a3a; }
+    .main {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      background: var(--bg);
+      overflow-y: auto;
+    }
+    .input-area {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      height: 130px;
+      background: var(--input);
+      border-radius: 10px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 10px;
+      transition: top 0.5s ease;
+      flex-wrap: wrap;
+    }
+    .input-area.down {
+      top: auto;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    #promptInput {
+      flex-grow: 1;
+      height: 100%;
+      font-size: 16px;
+      padding: 10px 40px 10px 40px;
+      border: none;
+      border-radius: 10px;
+      resize: none;
+      background: transparent;
+      color: var(--text);
+      min-width: 200px;
+    }
+    .generate-btn {
+      margin-top: 5px;
+      padding: 8px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background: var(--button);
+      color: #fff;
+    }
+    .generate-btn:hover { background: var(--button-hover); }
+    .upload-icon {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--button);
+    }
+    .upload-icon:hover { color: var(--button-hover); }
+    #uploadedImage {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      width: 40px;
+      height: 40px;
+      border-radius: 5px;
+      object-fit: cover;
+    }
+    .output-box {
+      background: var(--box);
+      border-radius: 10px;
+      padding: 20px;
+      white-space: pre-wrap;
+      overflow-y: auto;
+      max-height: 70%;
+      transition: all 0.3s ease;
+      margin-bottom: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: transparent transparent;
+      display: none; /* HIDE INITIALLY */
+    }
+    .output-box::-webkit-scrollbar { width: 6px; }
+    .output-box::-webkit-scrollbar-thumb { background-color: transparent; }
+    .template-toggle {
+      position: absolute;
+      top: 20px;
+      left: 10px;
+      z-index: 1000;
+    }
+    .template-toggle button {
+      padding: 5px 10px;
+      font-size: 14px;
+    }
+    .template-img {
+  width: 100%;
+  height: auto;
+  border-radius: 5px;
+  margin-bottom: 8px;
+}
+.sidebar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+/* Chrome, Edge, and Safari */
+.sidebar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+.selected-template {
+  border: 2px solid var(--button);
+  background-color: rgba(79, 195, 247, 0.1);
+}
+body.light .selected-template {
+  border-color: var(--button);
+  background-color: rgba(25, 118, 210, 0.1);
+}
+
+
+    .premium-btn {
+      padding: 5px 10px;
+      font-size: 12px;
+      border: none;
+      border-radius: 4px;
+      background: var(--button);
+      color: #fff;
+      cursor: pointer;
+      margin-right: 6px;
+      transition: background 0.3s ease;
+    }
+    .premium-btn:hover { background: var(--button-hover); }
+    .output-actions {
+      display: none;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    @media screen and (max-width: 768px) {
+      .content { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 10px;
+      }
+      .main { padding: 10px; }
+      .input-area {
+        width: 95%;
+        height: auto;
+        padding-bottom: 50px;
+      }
+      #promptInput { width: 100%; }
+      .generate-btn {
+        margin-top: 10px;
+        width: 100%;
+      }
+      .output-actions { justify-content: center; }
+      .premium-btn {
+        font-size: 11px;
+        padding: 6px 8px;
+      }
+      .upload-icon {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 24px; /* made slightly larger */
+      cursor: pointer;
+      color: var(--button);
+}
+
+  
+    }
+  </style>
+</head>
+<body class="dark">
+  <div class="container">
+    <div class="header">
+      <h2>AI Resume Builder</h2>
+      <div class="profile-container">
+        <div class="profile"><i class="fas fa-user"></i></div>
+        <div class="dropdown" id="profileDropdown">
+          <a href="#">Profile</a>
+          <a href="./saved" >Saved</a>
+          <a href="#">Logout</a>
+        </div>
+      </div>
+      <div class="theme-switch">
+        <label><input type="checkbox" id="themeToggle" onchange="switchTheme()" /> <span>🌞</span></label>
+      </div>
+    </div>
+
+    <div class="template-toggle">
+      <button onclick="toggleSidebar()">Templates</button>
+    </div>
+
+    <div class="content">
+      <div id="sidebar" class="sidebar">
+        <div class="template" name="template1" onclick="selectTemplate(this)">
+          <img src="template1.jpg" alt="Template 1" class="template-img">
+          Template 1
+        </div>
+        <div class="template" name="template2"  onclick="selectTemplate(this)">
+          <img src="template2.png" alt="Template 2" class="template-img">
+          Template 2
+        </div>
+        <div class="template" name="template3"  onclick="selectTemplate(this)">
+          <img src="template3.png" alt="Template 3" class="template-img">
+          Template 3
+        </div>
+        
+      </div>
+
+      <div class="main">
+        <div id="output" class="output-box"></div>
+        <div id="outputActions" class="output-actions" style="justify-content: space-between;">
+          <button id="saveTemplateBtn" class="premium-btn" onclick="saveAsTemplate()">Save Template</button>
+          <div>
+            <button class="premium-btn" onclick="editOutput()">Edit</button>
+            <button class="premium-btn" onclick="saveOutput()">Save change</button>
+            <button class="premium-btn" onclick="downloadPDF()">Download</button>
+          </div>
+        </div>
+        
+
+        <div id="inputArea" class="input-area">
+          <label for="imageUpload" class="upload-icon"><i class="fas fa-plus-circle"></i></label>
+          <input type="file" id="imageUpload" accept="image/*" style="display: none" onchange="previewImage(event)" />
+          <img id="uploadedImage" style="display: none;" />
+          <textarea id="promptInput" placeholder="Enter your role or description..."></textarea>
+          <button class="generate-btn" onclick="generate()">Generate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let uploadedImg = null;
+// Apply saved theme on page load
+window.onload = () => {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "light") {
+    document.body.classList.add("light");
+  } else {
+    document.body.classList.remove("light");
+  }
+};
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("collapsed");
+    }
+
+    function previewImage(event) {
+      uploadedImg = event.target.files[0];
+      const img = document.getElementById("uploadedImage");
+      img.src = URL.createObjectURL(uploadedImg);
+      img.style.display = "block";
+    }
+
+    function selectTemplate(element) {
+  const templates = document.querySelectorAll(".template");
+
+  // Deselect all others
+  templates.forEach(template => template.classList.remove("selected-template"));
+  
+  // Select clicked one
+  element.classList.add("selected-template");
+}
+
+async function generate() {
+  const userInput = document.getElementById("promptInput").value.trim();
+  if (!userInput) return;
+
+  const response = await fetch('/generate-resume', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userInput, template: 'resume1' })
+  });
+
+  const data = await response.json();
+
+  // Parse the full HTML
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(data.html, 'text/html');
+
+  // Extract <style> from generated resume
+  const resumeStyleTag = doc.querySelector('style');
+  if (resumeStyleTag) {
+    const resumeCSS = resumeStyleTag.textContent;
+
+    // Find the existing <style> in your main page (assumes one main <style> tag)
+    const mainStyleTag = document.head.querySelector('style');
+
+    if (mainStyleTag) {
+      mainStyleTag.textContent += "\n\n/* Resume Styles */\n" + resumeCSS;
+    } else {
+      // If no style tag exists, create one (fallback)
+      const newStyle = document.createElement('style');
+      newStyle.textContent = resumeCSS;
+      document.head.appendChild(newStyle);
+    }
+  }
+
+  // Inject only body content into #output
+  const bodyContent = doc.body.innerHTML;
+  document.getElementById("output").innerHTML = bodyContent;
+
+  // Show output area and adjust UI
+  document.getElementById("output").style.display = "block";
+  document.getElementById("outputActions").style.display = "flex";
+  document.getElementById("inputArea").classList.add("down");
+}
+
+async function downloadPDF() {
+  const htmlContent = document.querySelector('.output-box').innerHTML;
+
+  const response = await fetch('/download-pdf', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ html: htmlContent })
+  });
+
+  const blob = await response.blob();
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'resume.pdf';
+  link.click();
+}
+
+    function saveToFile() {
+      const text = document.getElementById("output").innerText;
+      const blob = new Blob([text], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "resume.txt";
+      link.click();
+    }
+
+    function editOutput() {
+      const box = document.getElementById("output");
+      box.contentEditable = "true";
+      box.focus();
+    }
+
+    function saveOutput() {
+      document.getElementById("output").contentEditable = "false";
+    }
+    function switchTheme() {
+  const isLight = document.body.classList.toggle("light");
+  localStorage.setItem("theme", isLight ? "light" : "dark");
+}
+
+async function saveAsTemplate() {
+    const htmlContent = document.querySelector('.output-box').innerHTML;
+    const selectedTemplate = document.querySelector('.selected-template');
+    const templateId = selectedTemplate.getAttribute('name');
+    const response = await fetch('/save-as-template', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: "<%= user.username %>",
+        email: "<%= user.email %>",
+        password: "<%= user.password %>", // Only include if needed
+        templateId,
+        templateCode: htmlContent
+      })
+    });
+
+    const result = await response.json();
+    if (result.redirectUrl) {
+      window.location.href = result.redirectUrl;
+    } else {
+      alert(result.message || "Saved successfully!");
+    }
+  }
+
+  </script>
+</body>
+</html>

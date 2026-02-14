@@ -1,0 +1,45 @@
+.resume-container {
+    max-width: 800px;
+    margin: auto;
+    padding: 35px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-left: 8px solid #4a90e2;
+}
+
+h1 {
+    color: #4a90e2;
+    font-size: 32px;
+    margin-bottom: 5px;
+}
+
+h2 {
+    color: #333;
+    font-size: 20px;
+    margin: 0;
+}
+
+.section {
+    margin-bottom: 30px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 700;
+    border-bottom: 2px solid #4a90e2;
+    padding-bottom: 6px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    color: #333;
+}
+
+.contact-info {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 25px;
+}
+
+ul {
+    padding-left: 20px;
+}

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Resume</title>
+</head>
+<body>
+    <h1>Edit Your Resume</h1>
+
+    <!-- 🔗 LinkedIn Login Button -->
+    <form action="/auth/linkedin" method="GET">
+        <button type="submit">Login with LinkedIn</button>
+    </form>
+    <br><br>
+
+    <form method="POST" action="/edit">
+        <textarea name="resume_text" rows="25" cols="100"><%= resume_text %></textarea><br><br>
+        <button type="submit">Download PDF</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Resume Builder</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('homebackground.jpg') no-repeat center center/cover;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.75);
+      z-index: -1;
+    }
+
+    .cover-container {
+      text-align: center;
+      color: white;
+      padding: 30px;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 15px;
+      max-width: 600px;
+    }
+
+    .cover-container h1 {
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+
+    .cover-container p {
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+
+    .cover-container .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .cover-container a {
+      text-decoration: none;
+      padding: 12px 24px;
+      background-color: #29b6f6;
+      color: white;
+      border-radius: 8px;
+      font-size: 18px;
+      transition: background-color 0.3s ease;
+    }
+
+    .cover-container a:hover {
+      background-color: #007acc;
+    }
+
+    @media (max-width: 480px) {
+      .cover-container h1 {
+        font-size: 28px;
+      }
+
+      .cover-container a {
+        font-size: 16px;
+        padding: 10px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cover-container">
+    <h1>Welcome to Our AI Resume Builder</h1>
+    <p>Create a professional resume with the power of AI in just a few clicks!</p>
+    <div class="button-group">
+      <a href="/login">Get Your Resume</a>
+      <a href="/signup">Sign Up</a>
+    </div>
+  </div>
+</body>
+</html>
