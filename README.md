@@ -254,7 +254,7 @@ git push origin feature/AmazingFeature
 **Repository:** [github.com/prv05/AI-Powered-Resume-Builder](https://github.com/prv05/AI-Powered-Resume-Builder)
 
 [![GitHub Issues](https://img.shields.io/badge/Report-Issue-red?style=for-the-badge&logo=github)](https://github.com/prv05/AI-Powered-Resume-Builder/issues)
-[![GitHub Discussions](https://img.shields.io/badge/Join-Discussion-blue?style=for-the-badge&logo=github)](https://github.com/prv05/AI-Powered-Resume-Builder/discussions)
+
 
 </div>
 
